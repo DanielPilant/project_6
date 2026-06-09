@@ -10,6 +10,7 @@
 const express = require("express");
 const cors = require("cors");
 
+const authRoutes = require("./routes/auth.routes");
 const usersRoutes = require("./routes/users.routes");
 const postsRoutes = require("./routes/posts.routes");
 const todosRoutes = require("./routes/todos.routes");
@@ -30,6 +31,9 @@ app.get("/", (req, res) => {
     resources: ["/users", "/posts", "/todos", "/comments"],
   });
 });
+
+// --- Auth routes (POST /login, POST /register) ---
+app.use("/", authRoutes);
 
 // --- Resource routers ---
 app.use("/users", usersRoutes);
