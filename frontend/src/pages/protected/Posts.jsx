@@ -54,8 +54,10 @@ export default function Posts() {
       });
       setPosts([...posts, data]);
       setNewPost({ title: "", body: "" });
-    } catch {
-      setError("Failed to add post");
+    } catch (error) {
+      setError(
+        `Failed to add post: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -63,15 +65,17 @@ export default function Posts() {
   async function deletePost(id) {
     try {
       await api.delete(`/posts/${id}`, { params: { user_id: user.id } });
-      setPosts(posts.filter((p) => p.id !== id));
-    } catch {
-      setError("Failed to delete post (only your own posts can be deleted)");
+      setPosts(posts.filter((post) => post.id !== id));
+    } catch (error) {
+      setError(
+        `Failed to delete post: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
   // Replace one post in state after an edit.
   function replacePost(updated) {
-    setPosts(posts.map((p) => (p.id === updated.id ? updated : p)));
+    setPosts(posts.map((post) => (post.id === updated.id ? updated : post)));
   }
 
   return (
@@ -190,8 +194,10 @@ function Comments({ postId, user }) {
     try {
       const { data } = await api.get(`/posts/${postId}/comments`);
       setComments(data);
-    } catch {
-      setError("Failed to load comments");
+    } catch (error) {
+      setError(
+        `Failed to load comments: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -214,8 +220,10 @@ function Comments({ postId, user }) {
       });
       setComments([...comments, data]);
       setBody("");
-    } catch {
-      setError("Failed to add comment");
+    } catch (error) {
+      setError(
+        `Failed to add comment: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -235,8 +243,10 @@ function Comments({ postId, user }) {
       });
       setComments(comments.map((c) => (c.id === comment.id ? data : c)));
       setEditingId(null);
-    } catch {
-      setError("You can only edit your own comments");
+    } catch (error) {
+      setError(
+        `Failed to edit comment: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -245,8 +255,11 @@ function Comments({ postId, user }) {
     try {
       await api.delete(`/comments/${id}`, { params: { user_id: user.id } });
       setComments(comments.filter((c) => c.id !== id));
-    } catch {
-      setError("You can only delete your own comments");
+    } catch (error) {
+      //TODO: remove the error messege in a good timing
+      setError(
+        `Failed to delete comment: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -275,7 +288,10 @@ function Comments({ postId, user }) {
                   <>
                     {" "}
                     <button onClick={() => startEdit(c)}>Edit</button>
-                    <button className="danger" onClick={() => deleteComment(c.id)}>
+                    <button
+                      className="danger"
+                      onClick={() => deleteComment(c.id)}
+                    >
                       Delete
                     </button>
                   </>
@@ -287,7 +303,10 @@ function Comments({ postId, user }) {
       </ul>
       {comments.length === 0 && <p className="muted">No comments yet.</p>}
 
-      <form onSubmit={addComment} style={{ flexDirection: "row", gap: "0.5rem" }}>
+      <form
+        onSubmit={addComment}
+        style={{ flexDirection: "row", gap: "0.5rem" }}
+      >
         <input
           placeholder="Add a comment..."
           value={body}
