@@ -201,3 +201,95 @@ code {
 .placeholder {
   max-width: 700px;
 }
+
+/* ---- Todos (Stage D) ---- */
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.todo-item span {
+  flex: 1;
+}
+
+.todo-done {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.todo-item button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* ---- Posts & Comments (Stage E) ---- */
+.post-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.post-card {
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.post-card h3 {
+  margin: 0 0 0.25rem;
+}
+
+.post-card textarea,
+.post-card input {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.row button,
+.comments button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.comments {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.comments ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+}
+
+.comments li {
+  padding: 0.25rem 0;
+}
+
+textarea {
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0b1220;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+}

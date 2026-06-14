@@ -99,21 +99,26 @@ CREATE TABLE posts (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =============================================================================
--- TABLE: comments  (posts 1 --- * comments)
+-- TABLE: comments  (posts 1 --- * comments, users 1 --- * comments)
 -- -----------------------------------------------------------------------------
--- Mirrors JSONPlaceholder where a comment carries its own name/email (the
--- commenter) rather than referencing a registered user.
+-- Like JSONPlaceholder a comment carries its own name/email label, but it also
+-- has a `user_id` OWNER (the registered user who wrote it). Stage E uses this
+-- owner to allow PUT/DELETE only on a user's own comments.
 -- =============================================================================
 CREATE TABLE comments (
   id      INT AUTO_INCREMENT PRIMARY KEY,
   post_id INT NOT NULL,
+  user_id INT NOT NULL,                             -- owner: the user who wrote it
   name    VARCHAR(255) NOT NULL,                    -- comment subject/author label
   email   VARCHAR(255) NOT NULL,                    -- commenter email (not a FK)
   body    TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_comments_post
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-  INDEX idx_comments_post (post_id)                 -- speeds up GET /posts/:id/comments
+  CONSTRAINT fk_comments_user
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_comments_post (post_id),                -- speeds up GET /posts/:id/comments
+  INDEX idx_comments_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =============================================================================
@@ -158,12 +163,14 @@ INSERT INTO posts (id, user_id, title, body) VALUES
   (4, 3, 'Hashing passwords safely',  'Use bcrypt or argon2 — never store plaintext.');
 
 -- ---- comments --------------------------------------------------------------
-INSERT INTO comments (id, post_id, name, email, body) VALUES
-  (1, 1, 'Great read',        'reader1@example.com', 'This cleared up joins for me, thanks!'),
-  (2, 1, 'Follow-up',         'reader2@example.com', 'Could you cover LEFT vs INNER next?'),
-  (3, 2, 'Helpful',           'reader3@example.com', 'Switched my tables to InnoDB after this.'),
-  (4, 3, 'Nice tips',         'reader4@example.com', 'The route naming section was gold.'),
-  (5, 4, 'Security matters',  'reader5@example.com', 'Glad you mentioned argon2 too.');
+-- user_id = the comment's owner. Seeded to the post's author so each seed
+-- comment has a valid owner who can edit/delete it.
+INSERT INTO comments (id, post_id, user_id, name, email, body) VALUES
+  (1, 1, 1, 'Great read',        'reader1@example.com', 'This cleared up joins for me, thanks!'),
+  (2, 1, 1, 'Follow-up',         'reader2@example.com', 'Could you cover LEFT vs INNER next?'),
+  (3, 2, 1, 'Helpful',           'reader3@example.com', 'Switched my tables to InnoDB after this.'),
+  (4, 3, 2, 'Nice tips',         'reader4@example.com', 'The route naming section was gold.'),
+  (5, 4, 3, 'Security matters',  'reader5@example.com', 'Glad you mentioned argon2 too.');
 
 -- =============================================================================
 -- End of init.sql

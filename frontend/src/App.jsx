@@ -15,8 +15,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./auth/ProtectedRoute";
-import PostsPlaceholder from "./pages/protected/PostsPlaceholder";
-import TodosPlaceholder from "./pages/protected/TodosPlaceholder";
+import Posts from "./pages/protected/Posts";
+import Todos from "./pages/protected/Todos";
 import { getCurrentUser } from "./auth/auth";
 
 // Decide where "/" should send the visitor.
@@ -41,8 +41,8 @@ export default function App() {
         <Route path="/users/:username" element={<AppLayout />}>
           {/* default child -> posts */}
           <Route index element={<Navigate to="posts" replace />} />
-          <Route path="posts" element={<PostsPlaceholder />} />
-          <Route path="todos" element={<TodosPlaceholder />} />
+          <Route path="posts" element={<Posts />} />
+          <Route path="todos" element={<Todos />} />
         </Route>
       </Route>
 

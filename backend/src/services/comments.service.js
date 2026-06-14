@@ -18,20 +18,21 @@ async function findById(id) {
   return rows[0];
 }
 
-// INSERT a new comment; returns the created row
-async function create({ post_id, name, email, body }) {
+// INSERT a new comment; returns the created row. `user_id` is the owner.
+async function create({ post_id, user_id, name, email, body }) {
   const [result] = await pool.query(
-    "INSERT INTO comments (post_id, name, email, body) VALUES (?, ?, ?, ?)",
-    [post_id, name, email, body]
+    "INSERT INTO comments (post_id, user_id, name, email, body) VALUES (?, ?, ?, ?, ?)",
+    [post_id, user_id, name, email, body]
   );
   return findById(result.insertId);
 }
 
-// UPDATE an existing comment; returns the updated row (or undefined if not found)
-async function update(id, { post_id, name, email, body }) {
+// UPDATE an existing comment; returns the updated row (or undefined if not found).
+// Only the body is editable here (owner/post don't change on edit).
+async function update(id, { name, email, body }) {
   const [result] = await pool.query(
-    "UPDATE comments SET post_id = ?, name = ?, email = ?, body = ? WHERE id = ?",
-    [post_id, name, email, body, id]
+    "UPDATE comments SET name = ?, email = ?, body = ? WHERE id = ?",
+    [name, email, body, id]
   );
   if (result.affectedRows === 0) return undefined;
   return findById(id);
