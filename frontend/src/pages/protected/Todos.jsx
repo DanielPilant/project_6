@@ -1,21 +1,3 @@
-// =============================================================================
-// pages/protected/Todos.jsx — Stage D (simplest version)
-// -----------------------------------------------------------------------------
-// One self-contained component that talks to the backend todos routes:
-//   GET    /users/:id/todos   -> load the active user's todos
-//   POST   /todos             -> add a new todo
-//   PUT    /todos/:id         -> update a todo (title AND/OR completed)
-//   DELETE /todos/:id         -> remove a todo
-//
-// The assignment's PUT requirement covers updating both the item's CONTENT
-// (title) and its COMPLETION state, so there are two ways to trigger a PUT:
-//   * the checkbox  -> updates `completed`
-//   * the Edit form -> updates `title`
-//
-// Kept deliberately minimal (all logic in this one file, the shared axios
-// client used directly) so it's easy to read and extend later.
-// =============================================================================
-
 import { useEffect, useState } from "react";
 import api from "../../api/client";
 import { getCurrentUser } from "../../auth/auth";
@@ -35,8 +17,10 @@ export default function Todos() {
     try {
       const { data } = await api.get(`/users/${user.id}/todos`);
       setTodos(data);
-    } catch {
-      setError("Failed to load todos");
+    } catch (error) {
+      setError(
+        `Failed to load todos: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -58,8 +42,10 @@ export default function Todos() {
       });
       setTodos([...todos, data]); // add the returned row to the list
       setNewTitle("");
-    } catch {
-      setError("Failed to add todo");
+    } catch (error) {
+      setError(
+        `Failed to add todo: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -73,8 +59,10 @@ export default function Todos() {
         completed: !todo.completed,
       });
       setTodos(todos.map((t) => (t.id === todo.id ? data : t)));
-    } catch {
-      setError("Failed to update todo");
+    } catch (error) {
+      setError(
+        `Failed to update todo: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -97,8 +85,10 @@ export default function Todos() {
       });
       setTodos(todos.map((t) => (t.id === todo.id ? data : t)));
       cancelEdit();
-    } catch {
-      setError("Failed to update todo");
+    } catch (error) {
+      setError(
+        `Failed to update todo: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -107,8 +97,10 @@ export default function Todos() {
     try {
       await api.delete(`/todos/${id}`);
       setTodos(todos.filter((t) => t.id !== id));
-    } catch {
-      setError("Failed to delete todo");
+    } catch (error) {
+      setError(
+        `Failed to delete todo: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 

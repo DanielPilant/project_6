@@ -32,8 +32,10 @@ export default function Posts() {
     try {
       const { data } = await api.get(`/users/${user.id}/posts`);
       setPosts(data);
-    } catch {
-      setError("Failed to load posts");
+    } catch (error) {
+      setError(
+        `Failed to load posts: ${error.response?.data?.message || error.message}`,
+      );
     }
   }
 
@@ -124,17 +126,24 @@ function PostCard({ post, user, onChanged, onDeleted }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({ title: post.title, body: post.body });
   const [showComments, setShowComments] = useState(false);
+  const [error, setError] = useState("");
   const isOwner = post.user_id === user.id; // we only show own posts, but be explicit
 
   // --- PUT: save an edited post --------------------------------------------
   async function save() {
-    const { data } = await api.put(`/posts/${post.id}`, {
-      user_id: user.id, // acting user; backend checks it owns the post
-      title: draft.title,
-      body: draft.body,
-    });
-    onChanged(data);
-    setEditing(false);
+    try {
+      const { data } = await api.put(`/posts/${post.id}`, {
+        user_id: user.id, // acting user; backend checks it owns the post
+        title: draft.title,
+        body: draft.body,
+      });
+      onChanged(data);
+      setEditing(false);
+    } catch (error) {
+      setError(
+        `Failed to edit post: ${error.response?.data?.message || error.message}`,
+      );
+    }
   }
 
   return (
@@ -172,6 +181,8 @@ function PostCard({ post, user, onChanged, onDeleted }) {
           </div>
         </>
       )}
+
+      {error && <p className="error">{error}</p>}
 
       {showComments && <Comments postId={post.id} user={user} />}
     </div>
