@@ -46,29 +46,31 @@ export default function AppLayout() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div className="brand">
-          <strong>JSONPlaceholder App</strong>
-          <span className="muted"> — signed in as {user?.username}</span>
-        </div>
+        <div className="app-header-inner">
+          <div className="brand">
+            <strong>📋 JSONPlaceholder App</strong>
+            <span className="muted"> — signed in as {user?.username}</span>
+          </div>
 
-        <nav className="app-nav">
-          <NavLink to={`/users/${username}/posts`}>Posts</NavLink>
-          <NavLink to={`/users/${username}/todos`}>Todos</NavLink>
-          <NavLink to={`/users/${username}/albums`}>Albums</NavLink>
-          <NavLink to={`/users/${username}/account`}>Account</NavLink>
-          {/* Admin link only for admins */}
-          {user?.is_admin ? (
-            <NavLink to={`/users/${username}/admin`}>Admin</NavLink>
-          ) : null}
-        </nav>
+          <nav className="app-nav">
+            <NavLink to={`/users/${username}/posts`}>Posts</NavLink>
+            <NavLink to={`/users/${username}/todos`}>Todos</NavLink>
+            <NavLink to={`/users/${username}/albums`}>Albums</NavLink>
+            <NavLink to={`/users/${username}/account`}>Account</NavLink>
+            {/* Admin link only for admins */}
+            {user?.is_admin ? (
+              <NavLink to={`/users/${username}/admin`}>Admin</NavLink>
+            ) : null}
+          </nav>
 
-        <div className="app-actions">
-          <button onClick={() => setShowInfo((v) => !v)}>
-            {showInfo ? "Hide Info" : "Info"}
-          </button>
-          <button className="danger" onClick={handleLogout}>
-            Logout
-          </button>
+          <div className="app-actions">
+            <button className="ghost" onClick={() => setShowInfo((v) => !v)}>
+              {showInfo ? "Hide Info" : "Info"}
+            </button>
+            <button className="danger" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
