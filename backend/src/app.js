@@ -17,6 +17,7 @@ const todosRoutes = require("./routes/todos.routes");
 const commentsRoutes = require("./routes/comments.routes");
 const albumsRoutes = require("./routes/albums.routes");
 const photosRoutes = require("./routes/photos.routes");
+const adminRoutes = require("./routes/admin.routes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -44,6 +45,7 @@ app.use("/todos", todosRoutes);
 app.use("/comments", commentsRoutes);
 app.use("/albums", albumsRoutes);
 app.use("/photos", photosRoutes);
+app.use("/admin", adminRoutes);
 
 // --- 404 + centralized error handling (must come last) ---
 app.use(notFound);

@@ -24,6 +24,7 @@ const MAX_FAILED_ATTEMPTS = 10;
 async function findAuthByUsername(username) {
   const [rows] = await pool.query(
     `SELECT u.id, u.name, u.username, u.email, u.phone, u.website,
+            u.is_admin, u.is_super_admin,
             a.password_hash, a.failed_attempts, a.locked_until
        FROM users u
        JOIN user_auth a ON a.user_id = u.id

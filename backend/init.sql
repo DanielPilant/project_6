@@ -37,6 +37,8 @@ CREATE TABLE users (
   email      VARCHAR(255) NOT NULL UNIQUE,          -- public + used for login lookup
   phone      VARCHAR(40),
   website    VARCHAR(255),
+  is_admin       TINYINT(1) NOT NULL DEFAULT 0,     -- can use the admin dashboard
+  is_super_admin TINYINT(1) NOT NULL DEFAULT 0,     -- the protected first admin (cannot be demoted/blocked)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -162,11 +164,14 @@ CREATE TABLE photos (
 -- =============================================================================
 
 -- ---- users -----------------------------------------------------------------
-INSERT INTO users (id, name, username, email, phone, website) VALUES
-  (1, 'Leanne Graham',  'bret',      'leanne@example.com',  '1-770-736-8031', 'hildegard.org'),
-  (2, 'Ervin Howell',   'antonette', 'ervin@example.com',   '010-692-6593',   'anastasia.net'),
-  (3, 'Clementine Bauch','samantha', 'clementine@example.com','1-463-123-4447','ramiro.info'),
-  (4, 'Patricia Lebsack','karianne', 'patricia@example.com', '493-170-9623',  'kale.biz');
+-- Daniel (id 5) is the SUPER ADMIN: the protected first admin who can never be
+-- demoted or blocked. On a fresh seed his password is "password123".
+INSERT INTO users (id, name, username, email, phone, website, is_admin, is_super_admin) VALUES
+  (1, 'Leanne Graham',  'bret',      'leanne@example.com',  '1-770-736-8031', 'hildegard.org', 0, 0),
+  (2, 'Ervin Howell',   'antonette', 'ervin@example.com',   '010-692-6593',   'anastasia.net', 0, 0),
+  (3, 'Clementine Bauch','samantha', 'clementine@example.com','1-463-123-4447','ramiro.info',   0, 0),
+  (4, 'Patricia Lebsack','karianne', 'patricia@example.com', '493-170-9623',  'kale.biz',       0, 0),
+  (5, 'Daniel Pilant',  'Daniel',    'doubledan@gmail.com',  '050-000-0000',   'daniel.dev',    1, 1);
 
 -- ---- user_auth -------------------------------------------------------------
 -- IMPORTANT: these are real bcrypt hashes for the literal password
@@ -177,7 +182,8 @@ INSERT INTO user_auth (user_id, password_hash) VALUES
   (1, '$2b$10$D2gunAzk9PIMECepePasce7Q.dv8z.nrwQO1Zg7Px2A2qTK8aFppi'),
   (2, '$2b$10$D2gunAzk9PIMECepePasce7Q.dv8z.nrwQO1Zg7Px2A2qTK8aFppi'),
   (3, '$2b$10$D2gunAzk9PIMECepePasce7Q.dv8z.nrwQO1Zg7Px2A2qTK8aFppi'),
-  (4, '$2b$10$D2gunAzk9PIMECepePasce7Q.dv8z.nrwQO1Zg7Px2A2qTK8aFppi');
+  (4, '$2b$10$D2gunAzk9PIMECepePasce7Q.dv8z.nrwQO1Zg7Px2A2qTK8aFppi'),
+  (5, '$2b$10$D2gunAzk9PIMECepePasce7Q.dv8z.nrwQO1Zg7Px2A2qTK8aFppi');
 
 -- ---- todos -----------------------------------------------------------------
 INSERT INTO todos (id, user_id, title, completed) VALUES

@@ -19,6 +19,7 @@ import Posts from "./pages/protected/Posts";
 import Todos from "./pages/protected/Todos";
 import Albums from "./pages/protected/Albums";
 import Account from "./pages/protected/Account";
+import Admin from "./pages/protected/Admin";
 import { getCurrentUser } from "./auth/auth";
 
 // Decide where "/" should send the visitor.
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="todos" element={<Todos />} />
           <Route path="albums" element={<Albums />} />
           <Route path="account" element={<Account />} />
+          <Route path="admin" element={<Admin />} />
         </Route>
       </Route>
 

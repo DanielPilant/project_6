@@ -56,6 +56,10 @@ export default function AppLayout() {
           <NavLink to={`/users/${username}/todos`}>Todos</NavLink>
           <NavLink to={`/users/${username}/albums`}>Albums</NavLink>
           <NavLink to={`/users/${username}/account`}>Account</NavLink>
+          {/* Admin link only for admins */}
+          {user?.is_admin ? (
+            <NavLink to={`/users/${username}/admin`}>Admin</NavLink>
+          ) : null}
         </nav>
 
         <div className="app-actions">
