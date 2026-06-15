@@ -54,6 +54,8 @@ export default function AppLayout() {
         <nav className="app-nav">
           <NavLink to={`/users/${username}/posts`}>Posts</NavLink>
           <NavLink to={`/users/${username}/todos`}>Todos</NavLink>
+          <NavLink to={`/users/${username}/albums`}>Albums</NavLink>
+          <NavLink to={`/users/${username}/account`}>Account</NavLink>
         </nav>
 
         <div className="app-actions">

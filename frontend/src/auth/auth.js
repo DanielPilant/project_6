@@ -29,6 +29,12 @@ export function isAuthenticated() {
   return getCurrentUser() !== null;
 }
 
+// Overwrite the saved user (e.g. after editing profile details) so the rest of
+// the app sees the updated info immediately.
+export function setCurrentUser(user) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+}
+
 // Verify credentials against the backend. On success the returned user data
 // (which contains NO password) is saved to localStorage.
 export async function login(username, password) {

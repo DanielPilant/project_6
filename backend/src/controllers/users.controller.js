@@ -67,6 +67,20 @@ async function getUserPosts(req, res, next) {
   }
 }
 
+// GET /users/:id/albums
+async function getUserAlbums(req, res, next) {
+  try {
+    const user = await usersService.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const albums = await usersService.findAlbumsByUserId(req.params.id);
+    res.status(200).json(albums);
+  } catch (err) {
+    next(err);
+  }
+}
+
 // POST /users
 async function createUser(req, res, next) {
   try {
@@ -120,6 +134,7 @@ module.exports = {
   getUserById,
   getUserTodos,
   getUserPosts,
+  getUserAlbums,
   createUser,
   updateUser,
   deleteUser,

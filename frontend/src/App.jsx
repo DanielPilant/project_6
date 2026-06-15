@@ -17,6 +17,8 @@ import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import Posts from "./pages/protected/Posts";
 import Todos from "./pages/protected/Todos";
+import Albums from "./pages/protected/Albums";
+import Account from "./pages/protected/Account";
 import { getCurrentUser } from "./auth/auth";
 
 // Decide where "/" should send the visitor.
@@ -43,6 +45,8 @@ export default function App() {
           <Route index element={<Navigate to="posts" replace />} />
           <Route path="posts" element={<Posts />} />
           <Route path="todos" element={<Todos />} />
+          <Route path="albums" element={<Albums />} />
+          <Route path="account" element={<Account />} />
         </Route>
       </Route>
 

@@ -18,6 +18,7 @@ router.post("/", usersController.createUser);
 // but keeping related reads grouped with the parent)
 router.get("/:id/todos", usersController.getUserTodos);
 router.get("/:id/posts", usersController.getUserPosts);
+router.get("/:id/albums", usersController.getUserAlbums);
 
 // Single item
 router.get("/:id", usersController.getUserById);

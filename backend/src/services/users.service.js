@@ -39,6 +39,15 @@ async function findPostsByUserId(userId) {
   return rows;
 }
 
+// SELECT all albums belonging to a user (nested resource)
+async function findAlbumsByUserId(userId) {
+  const [rows] = await pool.query(
+    "SELECT * FROM albums WHERE user_id = ? ORDER BY id",
+    [userId]
+  );
+  return rows;
+}
+
 // INSERT a new user; returns the newly created row
 async function create({ name, username, email, phone, website }) {
   const [result] = await pool.query(
@@ -71,6 +80,7 @@ module.exports = {
   findById,
   findTodosByUserId,
   findPostsByUserId,
+  findAlbumsByUserId,
   create,
   update,
   remove,

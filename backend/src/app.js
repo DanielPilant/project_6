@@ -15,6 +15,8 @@ const usersRoutes = require("./routes/users.routes");
 const postsRoutes = require("./routes/posts.routes");
 const todosRoutes = require("./routes/todos.routes");
 const commentsRoutes = require("./routes/comments.routes");
+const albumsRoutes = require("./routes/albums.routes");
+const photosRoutes = require("./routes/photos.routes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -28,7 +30,7 @@ app.get("/", (req, res) => {
   res.json({
     name: "jsonplaceholder-backend",
     status: "ok",
-    resources: ["/users", "/posts", "/todos", "/comments"],
+    resources: ["/users", "/posts", "/todos", "/comments", "/albums", "/photos"],
   });
 });
 
@@ -40,6 +42,8 @@ app.use("/users", usersRoutes);
 app.use("/posts", postsRoutes);
 app.use("/todos", todosRoutes);
 app.use("/comments", commentsRoutes);
+app.use("/albums", albumsRoutes);
+app.use("/photos", photosRoutes);
 
 // --- 404 + centralized error handling (must come last) ---
 app.use(notFound);

@@ -122,6 +122,39 @@ CREATE TABLE comments (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =============================================================================
+-- TABLE: albums  (users 1 --- * albums)
+-- -----------------------------------------------------------------------------
+-- A user owns many albums. Owner-only edit/delete (like posts).
+-- =============================================================================
+CREATE TABLE albums (
+  id      INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,                             -- owner
+  title   VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_albums_user
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_albums_user (user_id)                   -- speeds up GET /users/:id/albums
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =============================================================================
+-- TABLE: photos  (albums 1 --- * photos)
+-- -----------------------------------------------------------------------------
+-- Images are stored as URLs (the user "uploads" by pasting an image link),
+-- mirroring JSONPlaceholder's photos resource. Ownership is derived from the
+-- parent album, so no separate user_id column is needed here.
+-- =============================================================================
+CREATE TABLE photos (
+  id       INT AUTO_INCREMENT PRIMARY KEY,
+  album_id INT NOT NULL,
+  title    VARCHAR(255),                            -- optional caption
+  url      VARCHAR(2048) NOT NULL,                  -- the image URL
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_photos_album
+    FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE CASCADE,
+  INDEX idx_photos_album (album_id)                 -- speeds up GET /albums/:id/photos
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =============================================================================
 -- SEED DATA
 -- -----------------------------------------------------------------------------
 -- Explicit IDs are used so foreign keys line up deterministically and so the
@@ -171,6 +204,19 @@ INSERT INTO comments (id, post_id, user_id, name, email, body) VALUES
   (3, 2, 1, 'Helpful',           'reader3@example.com', 'Switched my tables to InnoDB after this.'),
   (4, 3, 2, 'Nice tips',         'reader4@example.com', 'The route naming section was gold.'),
   (5, 4, 3, 'Security matters',  'reader5@example.com', 'Glad you mentioned argon2 too.');
+
+-- ---- albums ----------------------------------------------------------------
+INSERT INTO albums (id, user_id, title) VALUES
+  (1, 1, 'Vacation 2026'),
+  (2, 1, 'Pets'),
+  (3, 2, 'Work projects');
+
+-- ---- photos (images by URL) ------------------------------------------------
+INSERT INTO photos (id, album_id, title, url) VALUES
+  (1, 1, 'Beach sunset', 'https://picsum.photos/seed/beach/300/200'),
+  (2, 1, 'Mountain trail', 'https://picsum.photos/seed/mountain/300/200'),
+  (3, 2, 'Sleepy cat', 'https://picsum.photos/seed/cat/300/200'),
+  (4, 3, 'Whiteboard plan', 'https://picsum.photos/seed/work/300/200');
 
 -- =============================================================================
 -- End of init.sql

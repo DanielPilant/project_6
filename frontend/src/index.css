@@ -293,3 +293,48 @@ textarea {
   font-family: inherit;
   font-size: 1rem;
 }
+
+/* ---- Albums & Photos ---- */
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.photo {
+  margin: 0;
+  width: 150px;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.photo img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+}
+
+.photo figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.photo figcaption button {
+  padding: 0.1rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+.photo-form {
+  flex-direction: row;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

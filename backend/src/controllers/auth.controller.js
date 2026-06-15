@@ -51,17 +51,68 @@ async function login(req, res, next) {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    const ok = await authService.verifyPassword(password, account.password_hash);
-    if (!ok) {
-      return res.status(401).json({ message: "Invalid username or password" });
+    // Blocked? Reject before even checking the password.
+    if (account.failed_attempts >= authService.MAX_FAILED_ATTEMPTS) {
+      return res.status(403).json({
+        message: "Account blocked due to too many failed login attempts. Contact an administrator.",
+      });
     }
 
-    // Strip the hash before sending the profile back to the client.
-    const { password_hash, ...publicUser } = account;
+    const ok = await authService.verifyPassword(password, account.password_hash);
+    if (!ok) {
+      // Count this failure; block on the Nth one.
+      await authService.registerFailedAttempt(account.id);
+      const attemptsLeft =
+        authService.MAX_FAILED_ATTEMPTS - (account.failed_attempts + 1);
+
+      if (attemptsLeft <= 0) {
+        return res.status(403).json({
+          message: "Account blocked due to too many failed login attempts. Contact an administrator.",
+        });
+      }
+      return res.status(401).json({
+        message: `Invalid username or password. ${attemptsLeft} attempt(s) left before the account is blocked.`,
+      });
+    }
+
+    // Success: clear the failure counter and any lock, then return the profile.
+    await authService.resetFailedAttempts(account.id);
+
+    // Strip auth/lockout fields before sending the profile back to the client.
+    const { password_hash, failed_attempts, locked_until, ...publicUser } = account;
     res.status(200).json(publicUser);
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { register, login };
+// POST /change-password
+async function changePassword(req, res, next) {
+  try {
+    const { user_id, currentPassword, newPassword } = req.body;
+    if (!user_id || !currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Fields 'user_id', 'currentPassword' and 'newPassword' are required",
+      });
+    }
+    if (newPassword.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "New password must be at least 6 characters" });
+    }
+
+    const result = await authService.changePassword(
+      user_id,
+      currentPassword,
+      newPassword
+    );
+    if (!result.ok) {
+      return res.status(result.status).json({ message: result.message });
+    }
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, changePassword };
