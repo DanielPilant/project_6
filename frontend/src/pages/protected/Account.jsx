@@ -28,6 +28,7 @@ export default function Account() {
   });
   const [detailsMsg, setDetailsMsg] = useState({ error: "", success: "" });
 
+  // function to save the details form, called on submit. If the username changed, the URL must follow.
   async function saveDetails(e) {
     e.preventDefault();
     setDetailsMsg({ error: "", success: "" });
@@ -49,7 +50,11 @@ export default function Account() {
   }
 
   // --- Change password form -------------------------------------------------
-  const [pw, setPw] = useState({ currentPassword: "", newPassword: "", confirm: "" });
+  const [pw, setPw] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirm: "",
+  });
   const [pwMsg, setPwMsg] = useState({ error: "", success: "" });
 
   async function changePassword(e) {
@@ -93,7 +98,9 @@ export default function Account() {
             Username
             <input
               value={details.username}
-              onChange={(e) => setDetails({ ...details, username: e.target.value })}
+              onChange={(e) =>
+                setDetails({ ...details, username: e.target.value })
+              }
             />
           </label>
           <label>
@@ -101,26 +108,34 @@ export default function Account() {
             <input
               type="email"
               value={details.email}
-              onChange={(e) => setDetails({ ...details, email: e.target.value })}
+              onChange={(e) =>
+                setDetails({ ...details, email: e.target.value })
+              }
             />
           </label>
           <label>
             Phone
             <input
               value={details.phone}
-              onChange={(e) => setDetails({ ...details, phone: e.target.value })}
+              onChange={(e) =>
+                setDetails({ ...details, phone: e.target.value })
+              }
             />
           </label>
           <label>
             Website
             <input
               value={details.website}
-              onChange={(e) => setDetails({ ...details, website: e.target.value })}
+              onChange={(e) =>
+                setDetails({ ...details, website: e.target.value })
+              }
             />
           </label>
 
           {detailsMsg.error && <p className="error">{detailsMsg.error}</p>}
-          {detailsMsg.success && <p className="success">{detailsMsg.success}</p>}
+          {detailsMsg.success && (
+            <p className="success">{detailsMsg.success}</p>
+          )}
           <button type="submit">Save details</button>
         </form>
       </section>
@@ -134,7 +149,9 @@ export default function Account() {
             <input
               type="password"
               value={pw.currentPassword}
-              onChange={(e) => setPw({ ...pw, currentPassword: e.target.value })}
+              onChange={(e) =>
+                setPw({ ...pw, currentPassword: e.target.value })
+              }
             />
           </label>
           <label>
