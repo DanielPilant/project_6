@@ -1,0 +1,50 @@
+name: Backend CI Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+
+      - name: Start Database and App via Docker Compose
+        run: docker compose up -d db
+
+      - name: Wait for MySQL to be ready
+        run: |
+          while status=$(docker inspect --format "{{.State.Health.Status}}" $(docker compose ps -q db)); do
+            if [ "$status" = "healthy" ]; then break; fi
+            sleep 3
+          done
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: mysecretpassword
+          DB_NAME: jsonplaceholder_db
+        run: npm test
+
+      - name: Tear down Docker
+        if: always()
+        run: docker compose down -v
