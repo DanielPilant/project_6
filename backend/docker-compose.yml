@@ -12,7 +12,7 @@ services:
     ports:
       - "3306:3306"
 
-    voluems:
+    volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
     healthcheck:
