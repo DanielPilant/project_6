@@ -31,7 +31,14 @@ app.get("/", (req, res) => {
   res.json({
     name: "jsonplaceholder-backend",
     status: "ok",
-    resources: ["/users", "/posts", "/todos", "/comments", "/albums", "/photos"],
+    resources: [
+      "/users",
+      "/posts",
+      "/todos",
+      "/comments",
+      "/albums",
+      "/photos",
+    ],
   });
 });
 

@@ -13,8 +13,10 @@ router.get("/", todosController.getAllTodos);
 router.post("/", todosController.createTodo);
 
 // Single item
-router.get("/:id", todosController.getTodoById);
-router.put("/:id", todosController.updateTodo);
-router.delete("/:id", todosController.deleteTodo);
+router
+  .route("/:id")
+  .get(todosController.getTodoById)
+  .put(todosController.updateTodo)
+  .delete(todosController.deleteTodo);
 
 module.exports = router;

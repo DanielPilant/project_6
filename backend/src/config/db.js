@@ -19,7 +19,7 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: Number(process.env.DB_CONNECTION_LIMIT) || 10,
+  connectionLimit: Number(process.env.DB_CONNECTION_LIMIT) || 1,
   queueLimit: 0,
 });
 
@@ -29,8 +29,9 @@ async function assertConnection() {
   await connection.ping();
   connection.release();
   console.log(
-    `[db] Connected to MySQL '${process.env.DB_NAME}' at ${process.env.DB_HOST}:${process.env.DB_PORT}`
+    `[db] Connected to MySQL '${process.env.DB_NAME}' at ${process.env.DB_HOST}:${process.env.DB_PORT}`,
   );
 }
 
+// Implementing singletone pattern for the connection pool to ensure that only one instance of the pool is created and shared across the application. This is achieved by exporting the same pool instance and the assertConnection function, which can be used to verify the connection when the application starts.
 module.exports = { pool, assertConnection };
