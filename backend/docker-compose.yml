@@ -16,9 +16,14 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 30s
-      retries: 10
+      # Force a TCP + authenticated ping so "healthy" only reports once the real
+      # server (after init.sql has loaded) is accepting connections — not during
+      # MySQL's temporary init phase.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpassword"]
+      interval: 5s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
 
   app:
     build: .

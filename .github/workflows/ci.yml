@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18.x"
+          node-version: "20.x"
 
       - name: Start Database and App via Docker Compose
         run: docker compose up -d db
@@ -41,7 +41,7 @@ jobs:
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
           DB_USER: root
-          DB_PASSWORD: mysecretpassword
+          DB_PASSWORD: rootpassword
           DB_NAME: jsonplaceholder_db
         run: npm test
 
