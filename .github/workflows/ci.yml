@@ -81,3 +81,44 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Execute Deployment on EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull ghcr.io/danielpilant/project-6-backend:latest
+            cat << 'EOF' > docker-compose.
+            version: '3.8'
+            services:
+              db:
+                image: mysql:8.0
+                environment:
+                  MYSQL_ROOT_PASSWORD: rootpassword
+                  MYSQL_DATABASE: jsonplaceholder_db
+                ports:
+                  - "3306:3306"
+              backend:
+                image: ghcr.io/danielpilant/project-6-backend:latest
+                ports:
+                  - "80:3000" 
+                depends_on:
+                  - db
+                environment:
+                  DB_HOST: db
+                  DB_USER: root
+                  DB_PASSWORD: rootpassword
+                  DB_NAME: jsonplaceholder_db
+            EOF
+
+            docker compose up -d
