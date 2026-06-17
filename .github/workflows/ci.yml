@@ -87,9 +87,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Prepare lowercase repository name
+        run: echo "REPO_LOWER=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
       - name: Execute Deployment on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
-
+        env:
+          REPO: ${{ env.REPO_LOWER }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
@@ -97,7 +101,7 @@ jobs:
 
           script: |
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/danielpilant/project-6-backend:latest
+            docker pull ghcr.io/$REPO/project-6-backend:latest
             cat << 'EOF' > docker-compose.
             version: '3.8'
             services:
