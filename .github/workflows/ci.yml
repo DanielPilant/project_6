@@ -23,9 +23,11 @@ jobs:
         with:
           node-version: "20.x"
 
+      # Start the database container in the background for testing
       - name: Start Database and App via Docker Compose
         run: docker compose up -d db
 
+      # Polling mechanism to ensure MySQL is fully initialized before running tests
       - name: Wait for MySQL to be ready
         run: |
           while status=$(docker inspect --format "{{.State.Health.Status}}" $(docker compose ps -q db)); do
@@ -36,6 +38,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      # Execute tests with required environment variables
       - name: Run Tests
         env:
           DB_HOST: 127.0.0.1
@@ -45,14 +48,17 @@ jobs:
           DB_NAME: jsonplaceholder_db
         run: npm test
 
+      # Cleanup database container after tests finish (runs even if tests fail)
       - name: Tear down Docker
         if: always()
         run: docker compose down -v
 
   build-and-push:
+    # Gating: Do not build or push if tests fail
     needs: test
     runs-on: ubuntu-latest
 
+    # Least privilege principle: grant only necessary permissions
     permissions:
       contents: read
       packages: write
@@ -61,6 +67,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Authenticate securely with GitHub Container Registry using the ephemeral GITHUB_TOKEN
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -68,11 +75,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ghcr.io image paths must be all lowercase, but github.repository can
-      # contain uppercase (e.g. DanielPilant/project_6). Lowercase it here.
+      # Docker requires repository names to be strictly lowercase
       - name: Prepare lowercase image name
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}/project-6-backend" >> "$GITHUB_ENV"
 
+      # Build the Docker image and push it to GHCR with standard and specific tags for traceability
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
@@ -83,13 +90,20 @@ jobs:
             ${{ env.IMAGE }}:${{ github.sha }}
 
   deploy:
+    # Gating: Deploy only if the artifact was successfully built and pushed
     needs: build-and-push
     runs-on: ubuntu-latest
 
+    # Required permission to pull packages from the registry
+    permissions:
+      packages: read
+
     steps:
+      # Prepare the lowercase repository name again for the deployment job
       - name: Prepare lowercase repository name
         run: echo "REPO_LOWER=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
 
+      # Establish a secure SSH connection to the EC2 instance
       - name: Execute Deployment on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -98,11 +112,17 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-
+          envs: REPO # Pass the REPO environment variable into the SSH session
           script: |
+            # Authenticate the EC2 server with GHCR without exposing the token in logs via stdin
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull the latest backend image dynamically using the REPO variable
             docker pull ghcr.io/$REPO/project-6-backend:latest
-            cat << 'EOF' > docker-compose.
+
+            # Generate the production docker-compose.yml file dynamically on the EC2 server (Infrastructure as Code)
+            # Note: No quotes around EOF so that $REPO is interpolated successfully
+            cat << EOF > docker-compose.yml
             version: '3.8'
             services:
               db:
@@ -113,7 +133,7 @@ jobs:
                 ports:
                   - "3306:3306"
               backend:
-                image: ghcr.io/danielpilant/project-6-backend:latest
+                image: ghcr.io/$REPO/project-6-backend:latest
                 ports:
                   - "80:3000" 
                 depends_on:
@@ -125,4 +145,5 @@ jobs:
                   DB_NAME: jsonplaceholder_db
             EOF
 
+            # Launch the new container in detached mode, replacing the old one with zero downtime
             docker compose up -d
