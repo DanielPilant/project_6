@@ -13,7 +13,7 @@ async function getAllData() {
   const [users] = await pool.query(
     `SELECT u.id, u.name, u.username, u.email, u.phone, u.website,
             u.is_admin, u.is_super_admin,
-            a.failed_attempts, a.locked_until
+            a.failed_attempts, a.blocked_at
        FROM users u
        LEFT JOIN user_auth a ON a.user_id = u.id
       ORDER BY u.id`
@@ -39,8 +39,8 @@ async function setUserRole(userId, isAdmin) {
 // Block (set the failure counter to the max + stamp a lock) or unblock (clear).
 async function setUserBlocked(userId, blocked, maxAttempts) {
   const sql = blocked
-    ? "UPDATE user_auth SET failed_attempts = ?, locked_until = NOW() WHERE user_id = ?"
-    : "UPDATE user_auth SET failed_attempts = 0, locked_until = NULL WHERE user_id = ?";
+    ? "UPDATE user_auth SET failed_attempts = ?, blocked_at = NOW() WHERE user_id = ?"
+    : "UPDATE user_auth SET failed_attempts = 0, blocked_at = NULL WHERE user_id = ?";
   const params = blocked ? [maxAttempts, userId] : [userId];
   const [result] = await pool.query(sql, params);
   return result.affectedRows > 0;

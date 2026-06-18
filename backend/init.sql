@@ -39,7 +39,7 @@ CREATE TABLE user_auth (
   user_id        INT PRIMARY KEY,
   password_hash  VARCHAR(255) NOT NULL,             -- bcrypt/argon2 hash ONLY (never plaintext)
   failed_attempts INT NOT NULL DEFAULT 0,           -- for brute-force lockout
-  locked_until   TIMESTAMP NULL DEFAULT NULL,       -- account lock expiry, NULL = not locked
+  blocked_at     TIMESTAMP NULL DEFAULT NULL,       -- when the account was blocked (NULL = not blocked)
   last_login_at  TIMESTAMP NULL DEFAULT NULL,
   updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_auth_user

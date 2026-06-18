@@ -45,12 +45,12 @@ async function findUserByCredentials(username, password) {
 }
 
 // Increment the failed-login counter. When it reaches MAX_FAILED_ATTEMPTS the
-// account becomes blocked (we stamp locked_until with the block time).
+// account becomes blocked (we stamp blocked_at with the block time).
 async function registerFailedAttempt(userId) {
   await pool.query(
     `UPDATE user_auth
         SET failed_attempts = failed_attempts + 1,
-            locked_until = IF(failed_attempts + 1 >= ?, NOW(), locked_until)
+            blocked_at = IF(failed_attempts + 1 >= ?, NOW(), blocked_at)
       WHERE user_id = ?`,
     [MAX_FAILED_ATTEMPTS, userId]
   );
@@ -60,7 +60,7 @@ async function registerFailedAttempt(userId) {
 async function resetFailedAttempts(userId) {
   await pool.query(
     `UPDATE user_auth
-        SET failed_attempts = 0, locked_until = NULL, last_login_at = NOW()
+        SET failed_attempts = 0, blocked_at = NULL, last_login_at = NOW()
       WHERE user_id = ?`,
     [userId]
   );
