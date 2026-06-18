@@ -76,7 +76,9 @@ async function updatePost(req, res, next) {
     }
     // Ownership check: acting user (user_id) must be the post's owner.
     if (existing.user_id !== Number(user_id)) {
-      return res.status(403).json({ message: "You can only edit your own posts" });
+      return res
+        .status(403)
+        .json({ message: "You can only edit your own posts" });
     }
 
     const updated = await postsService.update(req.params.id, req.body);
@@ -92,7 +94,9 @@ async function deletePost(req, res, next) {
   try {
     const actingUserId = Number(req.query.user_id);
     if (!actingUserId) {
-      return res.status(400).json({ message: "Query param 'user_id' is required" });
+      return res
+        .status(400)
+        .json({ message: "Query param 'user_id' is required" });
     }
 
     const existing = await postsService.findById(req.params.id);
@@ -100,7 +104,9 @@ async function deletePost(req, res, next) {
       return res.status(404).json({ message: "Post not found" });
     }
     if (existing.user_id !== actingUserId) {
-      return res.status(403).json({ message: "You can only delete your own posts" });
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own posts" });
     }
 
     await postsService.remove(req.params.id);

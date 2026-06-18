@@ -88,7 +88,9 @@ async function createUser(req, res, next) {
     if (!name || !username || !email) {
       return res
         .status(400)
-        .json({ message: "Fields 'name', 'username' and 'email' are required" });
+        .json({
+          message: "Fields 'name', 'username' and 'email' are required",
+        });
     }
     const newUser = await usersService.create(req.body);
     res.status(201).json(newUser);
@@ -104,7 +106,9 @@ async function updateUser(req, res, next) {
     if (!name || !username || !email) {
       return res
         .status(400)
-        .json({ message: "Fields 'name', 'username' and 'email' are required" });
+        .json({
+          message: "Fields 'name', 'username' and 'email' are required",
+        });
     }
     const updated = await usersService.update(req.params.id, req.body);
     if (!updated) {

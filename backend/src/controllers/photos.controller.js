@@ -17,7 +17,12 @@ async function checkAlbumOwnership(albumId, actingUserId) {
     return { error: { status: 404, message: "Album not found" } };
   }
   if (album.user_id !== Number(actingUserId)) {
-    return { error: { status: 403, message: "You can only modify photos in your own albums" } };
+    return {
+      error: {
+        status: 403,
+        message: "You can only modify photos in your own albums",
+      },
+    };
   }
   return { album };
 }
@@ -98,7 +103,9 @@ async function deletePhoto(req, res, next) {
   try {
     const actingUserId = Number(req.query.user_id);
     if (!actingUserId) {
-      return res.status(400).json({ message: "Query param 'user_id' is required" });
+      return res
+        .status(400)
+        .json({ message: "Query param 'user_id' is required" });
     }
 
     const photo = await photosService.findById(req.params.id);

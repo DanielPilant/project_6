@@ -62,7 +62,9 @@ async function updateComment(req, res, next) {
     }
     // Ownership check: acting user (user_id) must be the comment's owner.
     if (existing.user_id !== Number(user_id)) {
-      return res.status(403).json({ message: "You can only edit your own comments" });
+      return res
+        .status(403)
+        .json({ message: "You can only edit your own comments" });
     }
 
     const updated = await commentsService.update(req.params.id, req.body);
@@ -78,7 +80,9 @@ async function deleteComment(req, res, next) {
   try {
     const actingUserId = Number(req.query.user_id);
     if (!actingUserId) {
-      return res.status(400).json({ message: "Query param 'user_id' is required" });
+      return res
+        .status(400)
+        .json({ message: "Query param 'user_id' is required" });
     }
 
     const existing = await commentsService.findById(req.params.id);
@@ -86,7 +90,9 @@ async function deleteComment(req, res, next) {
       return res.status(404).json({ message: "Comment not found" });
     }
     if (existing.user_id !== actingUserId) {
-      return res.status(403).json({ message: "You can only delete your own comments" });
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own comments" });
     }
 
     await commentsService.remove(req.params.id);

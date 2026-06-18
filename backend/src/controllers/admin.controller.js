@@ -93,12 +93,16 @@ async function setUserRole(req, res, next) {
       return res.status(404).json({ message: "User not found" });
     }
     if (target.is_super_admin) {
-      return res.status(403).json({ message: "The super admin's role cannot be changed" });
+      return res
+        .status(403)
+        .json({ message: "The super admin's role cannot be changed" });
     }
 
     const isAdmin = req.body.is_admin ? 1 : 0;
     await adminService.setUserRole(req.params.id, isAdmin);
-    res.status(200).json({ message: isAdmin ? "User promoted to admin" : "User set to regular user" });
+    res.status(200).json({
+      message: isAdmin ? "User promoted to admin" : "User set to regular user",
+    });
   } catch (err) {
     next(err);
   }
@@ -112,16 +116,20 @@ async function setUserBlocked(req, res, next) {
       return res.status(404).json({ message: "User not found" });
     }
     if (target.is_super_admin) {
-      return res.status(403).json({ message: "The super admin cannot be blocked" });
+      return res
+        .status(403)
+        .json({ message: "The super admin cannot be blocked" });
     }
 
     const blocked = Boolean(req.body.blocked);
     await adminService.setUserBlocked(
       req.params.id,
       blocked,
-      authService.MAX_FAILED_ATTEMPTS
+      authService.MAX_FAILED_ATTEMPTS,
     );
-    res.status(200).json({ message: blocked ? "User blocked" : "User unblocked" });
+    res
+      .status(200)
+      .json({ message: blocked ? "User blocked" : "User unblocked" });
   } catch (err) {
     next(err);
   }

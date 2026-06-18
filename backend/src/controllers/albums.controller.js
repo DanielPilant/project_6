@@ -76,7 +76,9 @@ async function updateAlbum(req, res, next) {
       return res.status(404).json({ message: "Album not found" });
     }
     if (existing.user_id !== Number(user_id)) {
-      return res.status(403).json({ message: "You can only edit your own albums" });
+      return res
+        .status(403)
+        .json({ message: "You can only edit your own albums" });
     }
 
     const updated = await albumsService.update(req.params.id, req.body);
@@ -91,7 +93,9 @@ async function deleteAlbum(req, res, next) {
   try {
     const actingUserId = Number(req.query.user_id);
     if (!actingUserId) {
-      return res.status(400).json({ message: "Query param 'user_id' is required" });
+      return res
+        .status(400)
+        .json({ message: "Query param 'user_id' is required" });
     }
 
     const existing = await albumsService.findById(req.params.id);
@@ -99,7 +103,9 @@ async function deleteAlbum(req, res, next) {
       return res.status(404).json({ message: "Album not found" });
     }
     if (existing.user_id !== actingUserId) {
-      return res.status(403).json({ message: "You can only delete your own albums" });
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own albums" });
     }
 
     await albumsService.remove(req.params.id);

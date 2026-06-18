@@ -17,7 +17,8 @@ async function register(req, res, next) {
     const { name, username, email, password } = req.body;
     if (!name || !username || !email || !password) {
       return res.status(400).json({
-        message: "Fields 'name', 'username', 'email' and 'password' are required",
+        message:
+          "Fields 'name', 'username', 'email' and 'password' are required",
       });
     }
 
@@ -27,7 +28,9 @@ async function register(req, res, next) {
   } catch (err) {
     // Duplicate username/email -> 409 Conflict (friendlier than a raw 500).
     if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ message: "Username or email already taken" });
+      return res
+        .status(409)
+        .json({ message: "Username or email already taken" });
     }
     next(err);
   }
@@ -54,11 +57,15 @@ async function login(req, res, next) {
     // Blocked? Reject before even checking the password.
     if (account.failed_attempts >= authService.MAX_FAILED_ATTEMPTS) {
       return res.status(403).json({
-        message: "Account blocked due to too many failed login attempts. Contact an administrator.",
+        message:
+          "Account blocked due to too many failed login attempts. Contact an administrator.",
       });
     }
 
-    const ok = await authService.verifyPassword(password, account.password_hash);
+    const ok = await authService.verifyPassword(
+      password,
+      account.password_hash,
+    );
     if (!ok) {
       // Count this failure; block on the Nth one.
       await authService.registerFailedAttempt(account.id);
@@ -67,7 +74,8 @@ async function login(req, res, next) {
 
       if (attemptsLeft <= 0) {
         return res.status(403).json({
-          message: "Account blocked due to too many failed login attempts. Contact an administrator.",
+          message:
+            "Account blocked due to too many failed login attempts. Contact an administrator.",
         });
       }
       return res.status(401).json({
@@ -79,7 +87,8 @@ async function login(req, res, next) {
     await authService.resetFailedAttempts(account.id);
 
     // Strip auth/lockout fields before sending the profile back to the client.
-    const { password_hash, failed_attempts, locked_until, ...publicUser } = account;
+    const { password_hash, failed_attempts, locked_until, ...publicUser } =
+      account;
     res.status(200).json(publicUser);
   } catch (err) {
     next(err);
@@ -92,7 +101,8 @@ async function changePassword(req, res, next) {
     const { user_id, currentPassword, newPassword } = req.body;
     if (!user_id || !currentPassword || !newPassword) {
       return res.status(400).json({
-        message: "Fields 'user_id', 'currentPassword' and 'newPassword' are required",
+        message:
+          "Fields 'user_id', 'currentPassword' and 'newPassword' are required",
       });
     }
     if (newPassword.length < 6) {
@@ -104,7 +114,7 @@ async function changePassword(req, res, next) {
     const result = await authService.changePassword(
       user_id,
       currentPassword,
-      newPassword
+      newPassword,
     );
     if (!result.ok) {
       return res.status(result.status).json({ message: result.message });

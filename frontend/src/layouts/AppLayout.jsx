@@ -95,6 +95,10 @@ export default function AppLayout() {
       <main className="app-main">
         <Outlet />
       </main>
+
+      <footer className="app-footer">
+        Full-Stack Project 6 — JSONPlaceholder clone · React + Express + MySQL
+      </footer>
     </div>
   );
 }
