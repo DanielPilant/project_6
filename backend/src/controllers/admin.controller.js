@@ -1,14 +1,6 @@
 // =============================================================================
 // controllers/admin.controller.js
 // -----------------------------------------------------------------------------
-// All handlers here run AFTER the requireAdmin middleware, so req.admin is a
-// verified admin. Provides:
-//   * the full data snapshot
-//   * generic edit/delete of any content item (preserving its owner)
-//   * user role management (promote/demote) and block/unblock
-//
-// The super admin (is_super_admin) is protected: cannot be demoted or blocked.
-// =============================================================================
 
 const adminService = require("../services/admin.service");
 const usersService = require("../services/users.service");

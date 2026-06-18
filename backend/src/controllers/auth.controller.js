@@ -46,6 +46,7 @@ async function login(req, res, next) {
         .json({ message: "Fields 'username' and 'password' are required" });
     }
 
+    // Lightweight lookup for the lockout state (does NOT check the password).
     const account = await authService.findAuthByUsername(username);
 
     // Use the SAME 401 message whether the username is unknown or the password
@@ -62,12 +63,11 @@ async function login(req, res, next) {
       });
     }
 
-    const ok = await authService.verifyPassword(
-      password,
-      account.password_hash,
-    );
-    if (!ok) {
-      // Count this failure; block on the Nth one.
+    // THE PASSWORD CHECK HAPPENS IN SQL: this returns the user only if the
+    // username + password match in the JOIN's WHERE clause (SHA2). Otherwise undefined.
+    const user = await authService.findUserByCredentials(username, password);
+    if (!user) {
+      // Wrong password: count this failure and block on the Nth one.
       await authService.registerFailedAttempt(account.id);
       const attemptsLeft =
         authService.MAX_FAILED_ATTEMPTS - (account.failed_attempts + 1);
@@ -84,12 +84,9 @@ async function login(req, res, next) {
     }
 
     // Success: clear the failure counter and any lock, then return the profile.
+    // `user` already contains only public columns (no hash), so nothing to strip.
     await authService.resetFailedAttempts(account.id);
-
-    // Strip auth/lockout fields before sending the profile back to the client.
-    const { password_hash, failed_attempts, locked_until, ...publicUser } =
-      account;
-    res.status(200).json(publicUser);
+    res.status(200).json(user);
   } catch (err) {
     next(err);
   }

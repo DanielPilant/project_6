@@ -1,35 +1,45 @@
 // =============================================================================
 // services/auth.service.js — Data Access Layer for authentication
 // -----------------------------------------------------------------------------
-// Handles the two auth-specific DB operations:
-//   * registerUser   — INSERT into `users` + `user_auth` inside a TRANSACTION
-//                       (both rows must succeed together, or neither does).
-//   * findAuthByUsername — read the public profile JOINed with its password
-//                       hash, used only during login verification.
+// Per the requirement, the LOGIN password check happens IN SQL (in the JOIN's
+// WHERE clause via SHA2), not in Node. Passwords are therefore stored as
+// MySQL-computable SHA2(…, 256) hashes instead of bcrypt — bcrypt can't be
+// evaluated inside a SQL query.
 //
-// Password HASHING happens here (bcrypt) so plaintext never leaves this layer
-// and never touches the database. The controller only ever sees hashed data.
+// NOTE: SHA-256 is fast and unsalted, so this is WEAKER than bcrypt. It's the
+// price of verifying the password inside the database.
 // =============================================================================
 
-const bcrypt = require("bcryptjs");
 const { pool } = require("../config/db");
 
-const SALT_ROUNDS = 10;
 // After this many consecutive failed logins, the account is blocked.
 const MAX_FAILED_ATTEMPTS = 10;
 
-// Look up a user by username AND return the stored hash + lockout state (login only).
-// Returns { id, name, username, email, phone, website, password_hash,
-//           failed_attempts, locked_until } or undefined.
+// Lightweight lookup used only to drive the lockout logic: who is this user and
+// how many failed attempts do they have? (No password compare here.)
 async function findAuthByUsername(username) {
   const [rows] = await pool.query(
-    `SELECT u.id, u.name, u.username, u.email, u.phone, u.website,
-            u.is_admin, u.is_super_admin,
-            a.password_hash, a.failed_attempts, a.locked_until
+    `SELECT u.id, a.failed_attempts
        FROM users u
        JOIN user_auth a ON a.user_id = u.id
       WHERE u.username = ?`,
     [username]
+  );
+  return rows[0];
+}
+
+// THE PASSWORD CHECK, DONE IN SQL.
+// Returns the public user row ONLY if username + password both match — the
+// comparison is the `a.password_hash = SHA2(?, 256)` in the WHERE clause.
+// Returns undefined on a wrong username or wrong password.
+async function findUserByCredentials(username, password) {
+  const [rows] = await pool.query(
+    `SELECT u.id, u.name, u.username, u.email, u.phone, u.website,
+            u.is_admin, u.is_super_admin
+       FROM users u
+       JOIN user_auth a ON a.user_id = u.id
+      WHERE u.username = ? AND a.password_hash = SHA2(?, 256)`,
+    [username, password]
   );
   return rows[0];
 }
@@ -56,34 +66,29 @@ async function resetFailedAttempts(userId) {
   );
 }
 
-// Change a user's password after verifying the current one.
+// Change a user's password. The current password is verified IN SQL (SHA2), and
+// the new one is hashed by SQL too.
 // Returns { ok: true } or { ok: false, status, message }.
 async function changePassword(userId, currentPassword, newPassword) {
   const [rows] = await pool.query(
-    "SELECT password_hash FROM user_auth WHERE user_id = ?",
-    [userId]
+    "SELECT 1 FROM user_auth WHERE user_id = ? AND password_hash = SHA2(?, 256)",
+    [userId, currentPassword]
   );
-  const row = rows[0];
-  if (!row) return { ok: false, status: 404, message: "User not found" };
-
-  const matches = await bcrypt.compare(currentPassword, row.password_hash);
-  if (!matches) {
+  if (rows.length === 0) {
     return { ok: false, status: 401, message: "Current password is incorrect" };
   }
 
-  const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  await pool.query("UPDATE user_auth SET password_hash = ? WHERE user_id = ?", [
-    newHash,
-    userId,
-  ]);
+  await pool.query(
+    "UPDATE user_auth SET password_hash = SHA2(?, 256) WHERE user_id = ?",
+    [newPassword, userId]
+  );
   return { ok: true };
 }
 
-// Create a user profile + auth row atomically. Returns the public user data
-// (NO password hash). Throws on duplicate username/email (ER_DUP_ENTRY).
+// Create a user profile + auth row atomically. The password is hashed by SQL
+// (SHA2) on insert. Returns the public user data. Throws ER_DUP_ENTRY on a
+// duplicate username/email.
 async function registerUser({ name, username, email, phone, website, password }) {
-  const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
-
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -95,8 +100,8 @@ async function registerUser({ name, username, email, phone, website, password })
     const userId = userResult.insertId;
 
     await connection.query(
-      "INSERT INTO user_auth (user_id, password_hash) VALUES (?, ?)",
-      [userId, password_hash]
+      "INSERT INTO user_auth (user_id, password_hash) VALUES (?, SHA2(?, 256))",
+      [userId, password]
     );
 
     await connection.commit();
@@ -117,15 +122,10 @@ async function registerUser({ name, username, email, phone, website, password })
   }
 }
 
-// Compare a plaintext attempt against a stored bcrypt hash.
-async function verifyPassword(plaintext, hash) {
-  return bcrypt.compare(plaintext, hash);
-}
-
 module.exports = {
   findAuthByUsername,
+  findUserByCredentials,
   registerUser,
-  verifyPassword,
   registerFailedAttempt,
   resetFailedAttempts,
   changePassword,
